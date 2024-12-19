@@ -3,7 +3,7 @@ services:
     build:
       context: ./service-consumer
     environment:
-      - PROVIDER_URL=http://lb_provider:443/calculate
+      - PROVIDER_URL=http://lb_provider:5080/calculate
       - PORT=8000
       - NAME=consumer-service_1
       - SECRET_KEY=secret_key
@@ -17,7 +17,7 @@ services:
     build:
       context: ./service-consumer
     environment:
-      - PROVIDER_URL=http://lb_provider:443/calculate
+      - PROVIDER_URL=http://lb_provider:5080/calculate
       - PORT=8000
       - NAME=consumer-service_2
       - SECRET_KEY=secret_key
@@ -64,7 +64,7 @@ services:
     volumes:
       - ./service-provider/nginx.conf:/etc/nginx/nginx.conf
     ports:
-      - "443:443"
+      - "5080:5080"
     depends_on:
       - provider-service-1
       - provider-service-2

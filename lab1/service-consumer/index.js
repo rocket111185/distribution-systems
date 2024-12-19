@@ -61,8 +61,6 @@ app.get('/generate_task', verifyJwtToken, async (req, res) => {
     const startTime = Date.now();
 
     try {
-        console.log({ PROVIDER_URL });
-
         const response = await fetch(PROVIDER_URL, {
             method: 'POST',
             headers,
