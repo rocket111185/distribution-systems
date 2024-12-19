@@ -93,9 +93,11 @@ const server = app.listen(PORT, async () => {
 process.on("SIGTERM", () => {
     server.closeAllConnections();
     server.close();
+    connection.close();
 });
 
 process.on("SIGINT", () => {
     server.closeAllConnections();
     server.close();
+    connection.close();
 });

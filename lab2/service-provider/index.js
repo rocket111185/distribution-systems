@@ -52,6 +52,15 @@ async function startProvider() {
                 channel.ack(msg);
             }
         });
+
+        // Graceful shutdown as-is
+        process.on("SIGTERM", () => {
+            connection.close();
+        });
+
+        process.on("SIGINT", () => {
+            connection.close();
+        });
     } catch (err) {
         console.error('Failed to start provider:', err.message);
     }
