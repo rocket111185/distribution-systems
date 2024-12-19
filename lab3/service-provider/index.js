@@ -39,7 +39,7 @@ async function updateProjection(data) {
       return;
   }
 
-  projection.quantity += data.quantity;
+  projection.quantity = data.quantity;
   await projection.save();
   console.log("Projection updated:", data);
 }
@@ -54,6 +54,25 @@ async function deleteProjection(data) {
 
   await projection.destroy();
   console.log("Projection deleted:", data);
+}
+
+async function processEvent(event) {
+    console.log("Received event:", event);
+
+    const eventProcessorMap = {
+      order_created: createProjection,
+      order_updated: updateProjection,
+      order_deleted: deleteProjection
+    };
+
+    const eventProcessor = eventProcessorMap[event.event_type];
+
+    if (typeof eventProcessor !== "function") {
+      console.error("Unknown event type:", event.event_type);
+      return;
+    }
+
+    eventProcessor(event.data);
 }
 
 async function startConsumer() {
@@ -79,25 +98,6 @@ async function startConsumer() {
   } catch (err) {
       console.error("Error in consumer:", err.message);
   }
-}
-
-async function processEvent(event) {
-    console.log("Received event:", event);
-
-    const eventProcessorMap = {
-      order_created: createProjection,
-      order_updated: updateProjection,
-      order_deleted: deleteProjection
-    };
-
-    const eventProcessor = eventProcessorMap[event.event_type];
-
-    if (typeof eventProcessor !== "function") {
-      console.error("Unknown event type:", event.event_type);
-      return;
-    }
-
-    eventProcessor(event.data);
 }
 
 async function init() {
