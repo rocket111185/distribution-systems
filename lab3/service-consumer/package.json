@@ -1,0 +1,11 @@
+{
+  "name": "service-consumer",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "express": "^4.21.2",
+    "amqplib": "^0.10.5",
+    "sequelize": "^6.37.5",
+    "pg": "^8.13.1"
+  }
+}

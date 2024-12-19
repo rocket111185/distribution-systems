@@ -12,9 +12,8 @@ const SERVICE_NAME = process.env.SERVICE_NAME || 'consumer';
 let connection;
 let channel;
 let callbackQueue;
-const responseEmitter = new EventEmitter(); // Подієвий обробник відповідей
+const responseEmitter = new EventEmitter();
 
-// Підключення до RabbitMQ
 async function connectRabbitMQ() {
     try {
         console.log('Connecting to RabbitMQ...');
@@ -41,7 +40,6 @@ async function connectRabbitMQ() {
     }
 }
 
-// Надсилання задачі
 async function sendTask(task, priority) {
     if (!channel) {
         throw new Error('RabbitMQ channel is not initialized.');
@@ -52,7 +50,6 @@ async function sendTask(task, priority) {
     return new Promise((resolve) => {
         const startTime = Date.now();
 
-        // Підписка на відповідь
         responseEmitter.once(correlationId, (response) => {
             const requestTime = (Date.now() - startTime) / 1000;
             console.log(
@@ -61,7 +58,6 @@ async function sendTask(task, priority) {
             resolve({ response: JSON.parse(response), request_time: requestTime });
         });
 
-        // Відправка задачі
         channel.sendToQueue('priority_queue', Buffer.from(task.toString()), {
             correlationId,
             replyTo: callbackQueue,
@@ -70,7 +66,6 @@ async function sendTask(task, priority) {
     });
 }
 
-// API для додавання задачі
 app.post('/add_task', async (req, res) => {
     const { task, priority } = req.body;
 
@@ -88,7 +83,6 @@ app.post('/add_task', async (req, res) => {
     }
 });
 
-// Запуск сервісу
 const PORT = process.env.PORT || 8000;
 const server = app.listen(PORT, async () => {
     await connectRabbitMQ();

@@ -1,0 +1,10 @@
+{
+  "name": "service-provider",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "amqplib": "^0.10.5",
+    "sequelize": "^6.37.5",
+    "pg": "^8.13.1"
+  }
+}
