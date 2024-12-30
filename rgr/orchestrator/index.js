@@ -7,7 +7,7 @@ const TaskManager = require('./task-manager');
 const app = express();
 app.use(express.json());
 
-const AMQP_URL = process.env.AMQP_URL;
+const { AMQP_URL, SYNC_PROVIDER_API } = process.env;
 
 let connection;
 let channel;
@@ -41,12 +41,12 @@ async function connectRabbitMQ() {
     }
 }
 
-function sendTaskSequence(taskId, inputParameters, priority) {
+function sendTaskSequence(taskId, systems, priority) {
     if (!channel) {
         throw new Error('RabbitMQ channel is not initialized.');
     }
 
-    for (const [index, parameter] of inputParameters.entries()) {
+    for (const [index, system] of systems.entries()) {
         const correlationId = crypto.randomUUID();
 
         responseEmitter.once(correlationId, (response) => {
@@ -54,19 +54,36 @@ function sendTaskSequence(taskId, inputParameters, priority) {
             taskManager.addResult(taskId, results);
         });
 
-        const task = JSON.stringify({ id: index, parameter });
+        const task = JSON.stringify({ id: index, system });
         channel.sendToQueue('priority_queue', Buffer.from(task), {
             correlationId,
             replyTo: callbackQueue,
-            priority: priority,
+            priority
         });
     }
 }
 
-app.post('/calculate', async (req, res) => {
-    const { inputParameters, priority } = req.body;
+async function makeFormatRequest(results, format) {
+    const headers = {
+        Accept: 'application/json',
+        'Content-Type': 'application/json'
+    };
 
-    if (!Array.isArray(inputParameters)) {
+    const response = await fetch(SYNC_PROVIDER_API, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ results, format })
+    });
+
+    const responseBody = await response.json();
+
+    return responseBody;
+}
+
+app.post('/calculate', async (req, res) => {
+    const { systems, priority, format } = req.body;
+
+    if (!Array.isArray(systems)) {
         res.status(400);
         return res.json({
             error: true,
@@ -77,12 +94,14 @@ app.post('/calculate', async (req, res) => {
     const taskId = crypto.randomUUID();
     const startTime = Date.now();
 
-    taskManager.addTask(taskId, inputParameters.length, (results) => {
+    taskManager.addTask(taskId, systems.length, async (results) => {
         const calculationTime = (Date.now() - startTime) / 1000;
-        return res.json({ results, calculationTime });
+        const responseBody = await makeFormatRequest(results, format);
+
+        return res.json({ results: responseBody, calculationTime });
     });
 
-    sendTaskSequence(taskId, inputParameters, priority);
+    sendTaskSequence(taskId, systems, priority);
 });
 
 const PORT = process.env.PORT ?? 8000;

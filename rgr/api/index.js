@@ -6,7 +6,9 @@ const ORCHESTRATOR_URL = process.env.ORCHESTRATOR_URL;
 app.use(express.json());
 
 app.post('/generate_task', async (req, res) => {
-    const { inputParameters, priority } = req.body;
+    console.log("Log to indicate API service number");
+
+    const { systems, priority, format } = req.body;
     const headers = {
         Accept: 'application/json',
         'Content-Type': 'application/json'
@@ -15,12 +17,10 @@ app.post('/generate_task', async (req, res) => {
     const startTime = Date.now();
 
     try {
-        console.log({ ORCHESTRATOR_URL });
-
         const response = await fetch(ORCHESTRATOR_URL, {
             method: 'POST',
             headers,
-            body: JSON.stringify({ inputParameters, priority })
+            body: JSON.stringify({ systems, priority, format })
         });
 
         const requestTime = (Date.now() - startTime) / 1000;

@@ -17,8 +17,10 @@ services:
     environment:
       AMQP_URL: "amqp://myuser:mypassword@rabbitmq:5672/"
       PORT: 9000
+      SYNC_PROVIDER_API: "http://sync-provider:8000/format"
     depends_on:
       - queue-provider
+      - sync-provider
     networks:
       - my-network
 
@@ -30,6 +32,14 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+    networks:
+      - my-network
+
+  sync-provider:
+    build:
+      context: ./sync-provider
+    environment:
+      PORT: 8000
     networks:
       - my-network
 
