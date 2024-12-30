@@ -77,8 +77,6 @@ async function startProvider() {
                 const { id, system } = body;
                 const correlationId = msg.properties?.correlationId;
 
-                console.log(`Received task: ${correlationId}, chunk ${id}`);
-
                 const startTime = Date.now();
                 const result = solveLinearSystem(system);
 
@@ -86,8 +84,6 @@ async function startProvider() {
                 extraCalculation();
 
                 const computationTime = (Date.now() - startTime) / 1000;
-                console.log(`Computed: ${result}, Time: ${computationTime}s`);
-
                 const response = JSON.stringify({ result, computationTime, id });
 
                 channel.sendToQueue(msg.properties.replyTo, Buffer.from(response), {

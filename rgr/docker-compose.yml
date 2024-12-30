@@ -8,6 +8,8 @@ services:
     environment:
       ORCHESTRATOR_URL: "http://orchestrator:9000/calculate"
       PORT: 8000
+    depends_on:
+      - orchestrator
     networks:
       - my-network
 
