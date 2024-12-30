@@ -6,7 +6,7 @@ const ORCHESTRATOR_URL = process.env.ORCHESTRATOR_URL;
 app.use(express.json());
 
 app.post('/generate_task', async (req, res) => {
-    const { inputParameters } = req.body;
+    const { inputParameters, priority } = req.body;
     const headers = {
         Accept: 'application/json',
         'Content-Type': 'application/json'
@@ -20,7 +20,7 @@ app.post('/generate_task', async (req, res) => {
         const response = await fetch(ORCHESTRATOR_URL, {
             method: 'POST',
             headers,
-            body: JSON.stringify({ inputParameters })
+            body: JSON.stringify({ inputParameters, priority })
         });
 
         const requestTime = (Date.now() - startTime) / 1000;

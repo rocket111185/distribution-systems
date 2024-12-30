@@ -15,7 +15,21 @@ services:
     build:
       context: ./orchestrator
     environment:
+      AMQP_URL: "amqp://myuser:mypassword@rabbitmq:5672/"
       PORT: 9000
+    depends_on:
+      - queue-provider
+    networks:
+      - my-network
+
+  queue-provider:
+    build:
+      context: ./queue-provider
+    environment:
+      AMQP_URL: "amqp://myuser:mypassword@rabbitmq:5672/"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
     networks:
       - my-network
 
@@ -29,6 +43,23 @@ services:
       - api-service
     networks:
       - my-network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: myuser
+      RABBITMQ_DEFAULT_PASS: mypassword
+    networks:
+      - my-network
+    healthcheck:
+      test: rabbitmq-diagnostics check_port_connectivity
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
 
 networks:
   my-network:
